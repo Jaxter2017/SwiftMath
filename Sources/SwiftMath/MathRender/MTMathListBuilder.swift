@@ -254,22 +254,55 @@ public struct MTMathListBuilder {
                     continue
                 }
                 
+                // if let fontStyle = MTMathAtomFactory.fontStyleWithName(command) {
+                //     let oldSpacesAllowed = spacesAllowed
+                //     // Text has special consideration where it allows spaces without escaping.
+                //     spacesAllowed = command == "text"
+                //     let oldFontStyle = currentFontStyle
+                //     currentFontStyle = fontStyle
+                //     if let sublist = self.buildInternal(true) {
+                //         // Restore the font style.
+                //         currentFontStyle = oldFontStyle
+                //         spacesAllowed = oldSpacesAllowed
+                        
+                //         prevAtom = sublist.atoms.last
+                //         list.append(sublist)
+                //         if oneCharOnly {
+                //             return list
+                //         }
+                //     }
+                //     continue
+                // }
+                // ensures further text blocks are treated correctly (and not as a single characters/maths)
                 if let fontStyle = MTMathAtomFactory.fontStyleWithName(command) {
                     let oldSpacesAllowed = spacesAllowed
                     // Text has special consideration where it allows spaces without escaping.
                     spacesAllowed = command == "text"
                     let oldFontStyle = currentFontStyle
                     currentFontStyle = fontStyle
-                    if let sublist = self.buildInternal(true) {
-                        // Restore the font style.
-                        currentFontStyle = oldFontStyle
-                        spacesAllowed = oldSpacesAllowed
-                        
-                        prevAtom = sublist.atoms.last
-                        list.append(sublist)
-                        if oneCharOnly {
-                            return list
-                        }
+                    
+                    // We expect to find a single group (enclosed in braces) for text mode
+                    if !self.expectCharacter("{") {
+                        self.setError(.characterNotFound, message: "Expected { after \\text")
+                        return nil
+                    }
+                    
+                    let sublist = self.buildInternal(false, stopChar: "}")
+                    if sublist == nil {
+                        return nil  // Error already set by buildInternal
+                    }
+                    
+                    // NOTE: We don't need to consume the closing brace here because buildInternal 
+                    // does that for us when it finds its stopChar
+                    
+                    // Restore the font style.
+                    currentFontStyle = oldFontStyle
+                    spacesAllowed = oldSpacesAllowed
+                    
+                    prevAtom = sublist!.atoms.last
+                    list.append(sublist!)
+                    if oneCharOnly {
+                        return list
                     }
                     continue
                 }
