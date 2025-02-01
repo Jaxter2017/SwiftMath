@@ -638,6 +638,33 @@ public struct MTMathListBuilder {
             mathColorbox.colorString = self.readColor()!
             mathColorbox.innerList = self.buildInternal(true)
             return mathColorbox
+        // Inside atomForCommand function
+        } else if command == "operatorname" {
+            // We expect to find content in braces
+            if !self.expectCharacter("{") {
+                self.setError(.characterNotFound, message: "Missing { after \\operatorname")
+                return nil
+            }
+            
+            // Save the current font style and set it to roman
+            let oldFontStyle = currentFontStyle
+            currentFontStyle = .roman
+            
+            // Build the operator name
+            let operatorContent = self.buildInternal(false, stopChar: "}")
+            if operatorContent == nil {
+                return nil  // Error already set by buildInternal
+            }
+            
+            // Restore the font style
+            currentFontStyle = oldFontStyle
+            
+            // Create an operator with the content
+            if let opName = operatorContent?.atoms.map({ $0.nucleus }).joined() {
+                return MTMathAtomFactory.operatorWithName(opName, limits: false)
+            } else {
+                return nil
+            }
         } else {
             let errorMessage = "Invalid command \\\(command)"
             self.setError(.invalidCommand, message:errorMessage)
