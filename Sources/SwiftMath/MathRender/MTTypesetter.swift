@@ -801,18 +801,56 @@ class MTTypesetter {
         }
     }
     
-    func getInterElementSpace(_ left: MTMathAtomType, right:MTMathAtomType) -> CGFloat {
+    // func getInterElementSpace(_ left: MTMathAtomType, right:MTMathAtomType) -> CGFloat {
+    //     let leftIndex = getInterElementSpaceArrayIndexForType(left, row: true)
+    //     let rightIndex = getInterElementSpaceArrayIndexForType(right, row: false)
+    //     let spaceArray = getInterElementSpaces()[Int(leftIndex)]
+    //     let spaceTypeObj = spaceArray[Int(rightIndex)]
+    //     let spaceType = spaceTypeObj
+    //     assert(spaceType != .invalid, "Invalid space between \(left) and \(right)")
+        
+    //     let spaceMultipler = self.getSpacingInMu(spaceType)
+    //     if spaceMultipler > 0 {
+    //         // 1 em = size of font in pt. space multipler is in multiples mu or 1/18 em
+    //         return CGFloat(spaceMultipler) * styleFont.mathTable!.muUnit
+    //     }
+    //     return 0
+    // }
+
+   // Fixes possible index out of bounds crashes by safely handling array access and invalid spacing cases
+    func getInterElementSpace(_ left: MTMathAtomType, right: MTMathAtomType) -> CGFloat {
         let leftIndex = getInterElementSpaceArrayIndexForType(left, row: true)
         let rightIndex = getInterElementSpaceArrayIndexForType(right, row: false)
-        let spaceArray = getInterElementSpaces()[Int(leftIndex)]
-        let spaceTypeObj = spaceArray[Int(rightIndex)]
-        let spaceType = spaceTypeObj
-        assert(spaceType != .invalid, "Invalid space between \(left) and \(right)")
+        
+        // Get the space array safely
+        let spaceArrays = getInterElementSpaces()
+        guard leftIndex >= 0, leftIndex < spaceArrays.count else {
+            print("Warning: Left index \(leftIndex) out of bounds")
+            return 0
+        }
+        
+        let spaceArray = spaceArrays[Int(leftIndex)]
+        guard rightIndex >= 0, rightIndex < spaceArray.count else {
+            print("Warning: Right index \(rightIndex) out of bounds")
+            return 0
+        }
+        
+        let spaceType = spaceArray[Int(rightIndex)]
+        
+        // Replace assert with guard
+        guard spaceType != .invalid else {
+            print("Warning: Invalid space between \(left) and \(right)")
+            return 0
+        }
         
         let spaceMultipler = self.getSpacingInMu(spaceType)
+        guard let mathTable = styleFont.mathTable else {
+            print("Warning: Math table not available")
+            return 0
+        }
+        
         if spaceMultipler > 0 {
-            // 1 em = size of font in pt. space multipler is in multiples mu or 1/18 em
-            return CGFloat(spaceMultipler) * styleFont.mathTable!.muUnit
+            return CGFloat(spaceMultipler) * mathTable.muUnit
         }
         return 0
     }
