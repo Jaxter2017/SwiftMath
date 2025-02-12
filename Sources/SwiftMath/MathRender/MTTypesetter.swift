@@ -517,30 +517,38 @@ class MTTypesetter {
                     if currentLine.length > 0 {
                         self.addDisplayLine()
                     }
-                    let colorAtom = atom as! MTMathTextColor
-                    let display = MTTypesetter.createLineForMathList(colorAtom.innerList, font: font, style: style)
-                    display!.localTextColor = MTColor(fromHexString: colorAtom.colorString)
-
-                    if prevNode != nil {
-                        let subDisplay: MTDisplay = display!.subDisplays[0]
-                        let subDisplayAtom = (subDisplay as? MTCTLineDisplay)!.atoms[0]
-                        let interElementSpace = self.getInterElementSpace(prevNode!.type, right:subDisplayAtom.type)
+                    
+                    guard let colorAtom = atom as? MTMathTextColor,
+                        let display = MTTypesetter.createLineForMathList(colorAtom.innerList, font: font, style: style) else {
+                        print("[MTTypesetter] Error: Failed to create display for textcolor atom.")
+                        return
+                    }
+                    
+                    display.localTextColor = MTColor(fromHexString: colorAtom.colorString)
+                    
+                    if let prevNode = prevNode,
+                    let subDisplay = display.subDisplays.first,
+                    let ctLineDisplay = subDisplay as? MTCTLineDisplay,
+                    let subDisplayAtom = ctLineDisplay.atoms.first {
+                        
+                        let interElementSpace = self.getInterElementSpace(prevNode.type, right: subDisplayAtom.type)
+                        
                         if currentLine.length > 0 {
                             if interElementSpace > 0 {
-                                // add a kerning of that space to the previous character
-                                currentLine.addAttribute(kCTKernAttributeName as NSAttributedString.Key,
-                                                         value:NSNumber(floatLiteral: interElementSpace),
-                                                         range:currentLine.mutableString.rangeOfComposedCharacterSequence(at: currentLine.length-1))
+                                let range = currentLine.mutableString.rangeOfComposedCharacterSequence(at: currentLine.length - 1)
+                                currentLine.addAttribute(NSAttributedString.Key.kern,
+                                                        value: NSNumber(floatLiteral: interElementSpace),
+                                                        range: range)
                             }
                         } else {
                             // increase the space
                             currentPosition.x += interElementSpace
                         }
                     }
-
-                    display!.position = currentPosition
-                    currentPosition.x += display!.width
-                    displayAtoms.append(display!)
+                    
+                    display.position = currentPosition
+                    currentPosition.x += display.width
+                    displayAtoms.append(display)
 
                 case .colorBox:
                     // stash the existing layout
