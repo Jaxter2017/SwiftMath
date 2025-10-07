@@ -47,38 +47,31 @@ func getInterElementSpaces() -> [[InterElementSpaceType]] {
 
 
 // Get's the index for the given type. If row is true, the index is for the row (i.e. left element) otherwise it is for the column (right element)
-func getInterElementSpaceArrayIndexForType(_ type:MTMathAtomType, row:Bool) -> Int {
+func getInterElementSpaceArrayIndexForType(_ type: MTMathAtomType, row: Bool) -> Int {
     switch type {
-        case .color, .textcolor, .colorBox, .ordinary, .placeholder:   // A placeholder is treated as ordinary
-            return 0
+        case .color, .textcolor, .colorBox, .ordinary, .placeholder:
+            return 0                          // ordinary bucket
+        case .number, .variable, .unaryOperator:
+            return 0                          // treat as ordinary for spacing
         case .largeOperator:
             return 1
         case .binaryOperator:
-            return 2;
+            return 2
         case .relation:
-            return 3;
+            return 3
         case .open:
-            return 4;
+            return 4
         case .close:
-            return 5;
+            return 5
         case .punctuation:
-            return 6;
-        case .fraction,  // Fraction and inner are treated the same.
-             .inner:
-            return 7;
+            return 6
+        case .fraction, .inner:
+            return 7
         case .radical:
-            if row {
-                // Radicals have inter element spaces only when on the left side.
-                // Note: This is a departure from latex but we don't want \sqrt{4}4 to look weird so we put a space in between.
-                // They have the same spacing as ordinary except with ordinary.
-                return 8;
-            } else {
-                assert(false, "Interelement space undefined for radical on the right. Treat radical as ordinary.")
-                return Int.max
-            }
+            return row ? 8 : 0                // on the right, fall back to ordinary
         default:
-            assert(false, "Interelement space undefined for type \(type)")
-            return Int.max
+            // Fallback: unknown types behave like ordinary to avoid crashes
+            return 0
     }
 }
 
