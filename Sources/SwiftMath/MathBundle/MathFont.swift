@@ -5,7 +5,7 @@
 //  Created by Peter Tang on 10/9/2023.
 //
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #elseif os(macOS)
 import AppKit
@@ -41,11 +41,28 @@ public enum MathFont: String, CaseIterable, Identifiable {
             case .firaFont:         "Fira Math"
             case .notoSansFont:     "Noto Sans Math"
             case .libertinusFont:   "Libertinus Math"
-            case .garamondFont:     "Garamond Math"
+            case .garamondFont:     "Garamond-Math"  // PostScript name is "Garamond-Math", not "Garamond Math"
             case .leteSansFont:     "Lete Sans Math"
         }
     }
-	
+
+    var postScriptName: String {
+        switch self {
+            case .latinModernFont:  "LatinModernMath-Regular"
+            case .kpMathLightFont:  "KpMath-Light"
+            case .kpMathSansFont:   "KpMath-Sans"
+            case .xitsFont:         "XITSMath"
+            case .termesFont:       "TeXGyreTermesMath-Regular"
+            case .asanaFont:        "Asana-Math"
+            case .eulerFont:        "Euler-Math"
+            case .firaFont:         "FiraMath-Regular"
+            case .notoSansFont:     "NotoSansMath-Regular"
+            case .libertinusFont:   "LibertinusMath-Regular"
+            case .garamondFont:     "Garamond-Math"
+            case .leteSansFont:     "LeteSansMath"
+        }
+    }
+
     var fontName: String { self.rawValue }
 	
     public func cgFont() -> CGFont {
@@ -59,7 +76,7 @@ public enum MathFont: String, CaseIterable, Identifiable {
     }
     
     //Note: Below code are no longer supported, unable to tell if UIFont/NSFont is threadsafe, not used in SwiftMath.
-    // #if os(iOS)
+    // #if os(iOS) || os(visionOS)
     // public func uiFont(withSize size: CGFloat) -> UIFont? {
     //     UIFont(name: fontName, size: size)
     // }
