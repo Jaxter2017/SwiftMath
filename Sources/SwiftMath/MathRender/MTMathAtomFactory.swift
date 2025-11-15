@@ -403,6 +403,12 @@ public class MTMathAtomFactory {
         "upquote" : MTMathAtom(type: .ordinary, value: "\u{0027}"),
         "partial" : MTMathAtom(type: .ordinary, value: "\u{0001D715}"),
 
+        // Currency symbols
+        "pounds" : MTMathAtom(type: .ordinary, value: "£"),
+        "euro" : MTMathAtom(type: .ordinary, value: "€"),
+        "yen" : MTMathAtom(type: .ordinary, value: "¥"),
+        "cent" : MTMathAtom(type: .ordinary, value: "¢"),
+
         // Spacing
         "," : MTMathSpace(space: 3),
         ">" : MTMathSpace(space: 4),
@@ -628,6 +634,9 @@ public class MTMathAtomFactory {
 			case _ where supportedAccentedCharacters.keys.contains(ch):
 				// support for áéíóúýàèìòùâêîôûäëïöüÿãñõçøåæœß'ÁÉÍÓÚÝÀÈÌÒÙÂÊÎÔÛÄËÏÖÜÃÑÕÇØÅÆŒ
 				return atom(fromAccentedCharacter: ch)
+            case "£", "€", "¥", "¢":
+                // Currency symbols
+                return MTMathAtom(type: .ordinary, value: chStr)
             case _ where ch.utf32Char < 0x0021 || ch.utf32Char > 0x007E:
                 return nil
             case "$", "%", "#", "&", "~", "\'", "^", "_", "{", "}", "\\":

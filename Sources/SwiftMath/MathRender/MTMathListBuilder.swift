@@ -855,6 +855,10 @@ public struct MTMathListBuilder {
             mathColorbox.colorString = color!
             mathColorbox.innerList = self.buildInternal(true)
             return mathColorbox
+        } else if command == "bmod" || command == "mod" {
+            // A bmod/mod command is a binary operator - just adds "mod" with proper spacing
+            let modOperator = MTMathAtomFactory.atom(forLatexSymbol: "mod")!
+            return modOperator
         } else if command == "pmod" {
             // A pmod command has 1 argument - creates (mod n)
             let inner = MTInner()
